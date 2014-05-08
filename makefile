@@ -45,6 +45,12 @@ install: $(INSTALL_PATH)
 
 clean:
 	rm -f $(OBJECTS) $(DEPENDS) $(BIN_PATH)/$(TARGET)
+	rmdir $(BUILD_PATH)
+ifneq ($(DEV_BUILD_PATH),)
+	rmdir $(DEV_BUILD_PATH)/$(TARGET)
+else
+	rmdir $(BIN_PATH)
+endif
 
 uninstall:
 	rm -rf $(INSTALL_PATH)/$(TARGET)
