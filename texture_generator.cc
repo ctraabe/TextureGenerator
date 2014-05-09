@@ -12,11 +12,12 @@ using namespace std;
 void DisplayOptions()
 {
   cout << "OPTIONS:" << endl;
-  cout << "  -f <output filename>" << endl;
-  cout << "  -w <page width (mm)>" << endl;
-  cout << "  -h <page height (mm)>" << endl;
-  cout << "  -d <marker density (/m^2)>" << endl;
-  cout << "  -m <minimum marker width (mm)>" << endl;
+  cout << "  -f <output filename [texture.svg]>" << endl;
+  cout << "  -pw <page width (mm) [210]>" << endl;
+  cout << "  -ph <page height (mm) [297]>" << endl;
+  cout << "  -d <marker density (/m^2) [100000]>" << endl;
+  cout << "  -mw <minimum marker width (mm) [2]>" << endl;
+  cout << "  -bl <background lightness (0-255) [127]>" << endl;
   cout << endl;
 }
 
@@ -39,7 +40,8 @@ static char* CmdOption(char** begin, char** end, const string& option)
 
 //------------------------------------------------------------------------------
 // Writes the beginning of the SVG file, including the gray background
-static void SVGWriteHeader(ofstream& file, int width, int height)
+static void SVGWriteHeader(ofstream& file, int width, int height,
+  int background_lightness)
 {
   file << "<?xml version=\"1.0\" standalone=\"no\"?>" << endl;
   file << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"" << endl;
@@ -53,7 +55,10 @@ static void SVGWriteHeader(ofstream& file, int width, int height)
   file << "  <desc>Generated texture for FAST corner detector</desc>" << endl;
   file << endl;
   file << "  <rect width=\"" << width << "\" height=\"" << height
-    << "\" fill=\"#7f7f7f\" />" << endl;
+    << "\" fill=\"#";
+  for (int i = 0; i < 3; i++)
+    file << hex << setw(2) << background_lightness;
+  file << "\" />" << endl;
   file << endl;
 }
 
@@ -115,6 +120,7 @@ int main (int argc, char* argv[])
   float width = 210., height = 297.;
   float density = 10000.;  // Objects per square m
   float minimum_size = 2.;  // Millimeters
+  int background_lightness = 127;
 
   cout << endl;
   cout << "University of Tokyo texture generator for FAST corner detector"
@@ -141,11 +147,11 @@ int main (int argc, char* argv[])
   if (!output_filename)
     output_filename = default_filename;
 
-  char* width_ascii = CmdOption(argv, argv + argc, "-w");
+  char* width_ascii = CmdOption(argv, argv + argc, "-pw");
   if (width_ascii)
     width = atof(width_ascii);
 
-  char* height_ascii = CmdOption(argv, argv + argc, "-h");
+  char* height_ascii = CmdOption(argv, argv + argc, "-ph");
   if (height_ascii)
     height = atof(height_ascii);
 
@@ -153,9 +159,13 @@ int main (int argc, char* argv[])
   if (density_ascii)
     density = atof(density_ascii);
 
-  char* minimum_size_ascii = CmdOption(argv, argv + argc, "-m");
+  char* minimum_size_ascii = CmdOption(argv, argv + argc, "-mw");
   if (minimum_size_ascii)
     minimum_size = atof(minimum_size_ascii);
+
+  char* background_lightness_ascii = CmdOption(argv, argv + argc, "-bl");
+  if (background_lightness_ascii)
+    background_lightness = atoi(background_lightness_ascii);
 
   // Open the output file
   output_file.open(output_filename);
@@ -169,7 +179,7 @@ int main (int argc, char* argv[])
   // specified (in this case, used for specifying hex lightness values.)
   output_file << internal << setfill('0');
 
-  SVGWriteHeader(output_file, width, height);
+  SVGWriteHeader(output_file, width, height, background_lightness);
 
   // Initialize the random seed:
   srand(time(NULL));
@@ -179,6 +189,7 @@ int main (int argc, char* argv[])
   const float maximum_size = .8 * min(width, height);
   const float density_max = 1. / maximum_size / maximum_size;  // relative
   const float density_min = 1. / minimum_size / minimum_size;  // relative
+  const int lightness_gap = 40;
   for (int i = 0; i < number; ++i)
   {
     float size = sqrt(1. / (((float)i / (float)(number - 1))
@@ -187,9 +198,9 @@ int main (int argc, char* argv[])
     float x = RandUni(half_size, width - half_size);
     float y = RandUni(half_size, height - half_size);
     float rotation = RandUni(-.25, .25);
-    int lightness = rand() % (0xff - 40);
-    if (lightness > 0.7f - 40 / 2)
-      lightness += 40;
+    int lightness = rand() % (255 - lightness_gap);
+    if (lightness > background_lightness - lightness_gap / 2)
+      lightness += lightness_gap;
 
     SVGAddPlus(output_file, x, y, rotation, size, lightness);
   }
