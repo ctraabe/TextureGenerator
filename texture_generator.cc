@@ -9,15 +9,17 @@
 using namespace std;
 
 //------------------------------------------------------------------------------
-void DisplayOptions()
+void DisplayOptions(char* default_filename, float width, float height,
+  float density, float minimum_size, int background_lightness)
 {
   cout << "OPTIONS:" << endl;
-  cout << "  -f <output filename [texture.svg]>" << endl;
-  cout << "  -pw <page width (mm) [210]>" << endl;
-  cout << "  -ph <page height (mm) [297]>" << endl;
-  cout << "  -d <marker density (/m^2) [100000]>" << endl;
-  cout << "  -mw <minimum marker width (mm) [2]>" << endl;
-  cout << "  -bl <background lightness (0-255) [127]>" << endl;
+  cout << "  -f <output filename [" << default_filename << "]>" << endl;
+  cout << "  -pw <page width (mm) [" << width << "]>" << endl;
+  cout << "  -ph <page height (mm) [" << height << "]>" << endl;
+  cout << "  -d <marker density (/m^2) [" << density << "]>" << endl;
+  cout << "  -mw <minimum marker width (mm) [" << minimum_size << "]>" << endl;
+  cout << "  -bl <background lightness (0-255) [" << background_lightness
+    << "]>" << endl;
   cout << endl;
 }
 
@@ -28,14 +30,30 @@ bool CmdOptionExists(char** begin, char** end, const string& option)
 }
 
 //------------------------------------------------------------------------------
-static char* CmdOption(char** begin, char** end, const string& option)
+static void CmdOptionRead(char** begin, char** end, const string& option,
+  char** output)
 {
   char** itr = find(begin, end, option);
   if (itr != end && ++itr != end)
-  {
-    return *itr;
-  }
-  return 0;
+    *output = *itr;
+}
+
+//------------------------------------------------------------------------------
+static void CmdOptionRead(char** begin, char** end, const string& option,
+  float& output)
+{
+  char** itr = find(begin, end, option);
+  if (itr != end && ++itr != end)
+    output = atof(*itr);
+}
+
+//------------------------------------------------------------------------------
+static void CmdOptionRead(char** begin, char** end, const string& option,
+  int& output)
+{
+  char** itr = find(begin, end, option);
+  if (itr != end && ++itr != end)
+    output = atoi(*itr);
 }
 
 //------------------------------------------------------------------------------
@@ -134,7 +152,8 @@ int main (int argc, char* argv[])
   // Parse command line options
   if (CmdOptionExists(argv, argv + argc, "-h"))
   {
-    DisplayOptions();
+    DisplayOptions(default_filename, width, height, density, minimum_size,
+      background_lightness);
     return 0;
   }
   else
@@ -143,29 +162,16 @@ int main (int argc, char* argv[])
     cout << endl;
   }
 
-  char* output_filename = CmdOption(argv, argv + argc, "-f");
+  char* output_filename = NULL;
+  CmdOptionRead(argv, argv + argc, "-f", &output_filename);
   if (!output_filename)
     output_filename = default_filename;
 
-  char* width_ascii = CmdOption(argv, argv + argc, "-pw");
-  if (width_ascii)
-    width = atof(width_ascii);
-
-  char* height_ascii = CmdOption(argv, argv + argc, "-ph");
-  if (height_ascii)
-    height = atof(height_ascii);
-
-  char* density_ascii = CmdOption(argv, argv + argc, "-d");
-  if (density_ascii)
-    density = atof(density_ascii);
-
-  char* minimum_size_ascii = CmdOption(argv, argv + argc, "-mw");
-  if (minimum_size_ascii)
-    minimum_size = atof(minimum_size_ascii);
-
-  char* background_lightness_ascii = CmdOption(argv, argv + argc, "-bl");
-  if (background_lightness_ascii)
-    background_lightness = atoi(background_lightness_ascii);
+  CmdOptionRead(argv, argv + argc, "-pw", width);
+  CmdOptionRead(argv, argv + argc, "-ph", height);
+  CmdOptionRead(argv, argv + argc, "-d", density);
+  CmdOptionRead(argv, argv + argc, "-mw", minimum_size);
+  CmdOptionRead(argv, argv + argc, "-bl", background_lightness);
 
   // Open the output file
   output_file.open(output_filename);
