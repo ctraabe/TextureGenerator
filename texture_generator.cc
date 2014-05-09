@@ -136,8 +136,8 @@ int main (int argc, char* argv[])
 
   // Other default values (can be overridden with command line options):
   float width = 210., height = 297.;
-  float density = 10000.;  // Objects per square m
-  float minimum_size = 2.;  // Millimeters
+  float density = 200000.;  // Objects per square m
+  float minimum_size = 1.;  // Millimeters
   int background_lightness = 127;
 
   cout << endl;
