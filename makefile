@@ -18,18 +18,18 @@ BIN_PATH   := bin
 endif
 INSTALL_PATH ?= /usr/local
 
-SOURCES    = $(wildcard *.cc)
-OBJECTS    = $(addprefix $(BUILD_PATH)/, $(SOURCES:.cc=.o))
-DEPENDS    = $(addprefix $(BUILD_PATH)/, $(SOURCES:.cc=.d))
+SOURCES    = $(wildcard *.cpp)
+OBJECTS    = $(addprefix $(BUILD_PATH)/, $(SOURCES:.cpp=.o))
+DEPENDS    = $(addprefix $(BUILD_PATH)/, $(SOURCES:.cpp=.d))
 
 
 # Rule to make dependency "makefiles"
-$(BUILD_PATH)/%.d: %.cc
+$(BUILD_PATH)/%.d: %.cpp
 	mkdir -p $(BUILD_PATH)
-	$(CXX) -MM -MT '$(addprefix $(BUILD_PATH)/, $(<:.cc=.o)) $@' $< -MF $@
+	$(CXX) -MM -MT '$(addprefix $(BUILD_PATH)/, $(<:.cpp=.o)) $@' $< -MF $@
 
 # Rule to make the compiled objects
-$(BUILD_PATH)/%.o: %.cc $(BUILD_PATH)/%.d
+$(BUILD_PATH)/%.o: %.cpp $(BUILD_PATH)/%.d
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
 # Declare targets that are not files
