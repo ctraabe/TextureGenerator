@@ -1,3 +1,4 @@
+# STANDARD Makefile by Chris Raabe
 TARGET     := texture-generator
 
 CXXFLAGS   := -std=c++11
@@ -26,7 +27,7 @@ DEPENDS    = $(addprefix $(BUILD_PATH)/, $(SOURCES:.cpp=.d))
 # Rule to make dependency "makefiles"
 $(BUILD_PATH)/%.d: %.cpp
 	mkdir -p $(BUILD_PATH)
-	$(CXX) -MM -MT '$(addprefix $(BUILD_PATH)/, $(<:.cpp=.o)) $@' $< -MF $@
+	$(CXX) $(CXXFLAGS) -MM -MT '$(addprefix $(BUILD_PATH)/, $(<:.cpp=.o)) $@' $< -MF $@
 
 # Rule to make the compiled objects
 $(BUILD_PATH)/%.o: %.cpp $(BUILD_PATH)/%.d
